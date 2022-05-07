@@ -93,6 +93,156 @@ SET <имя_столбца> = <значение>, ...
 
 Все запросы можно увидеть в файле ![Lab3.sql](https://gitlab.icc.spbstu.ru/mahonko.yav/databases/-/raw/Lab3/Lab3/Lab3.sql)
 Результаты сохранены в картинках.
+В задании 1 мы выводим все записи всех таблиц 
+![на примере таблицы моделей](pic/task1/Models.png)
+
+В задании 2 нужно было сделать выборку данных из одной таблицы при нескольких условиях, с использованием логических операций, LIKE, BETWEEN, IN (не менее 3-х разных примеров)
+```sql
+CREATE OR REPLACE VIEW task2_1 AS
+SELECT * FROM models
+WHERE model_type_name::text LIKE '%drip' AND id != 3;
+
+SELECT * FROM task2_1;
+
+CREATE OR REPLACE VIEW task2_2 AS
+SELECT * FROM models
+WHERE volume BETWEEN 10 AND 200 AND id != 2;
+
+SELECT * FROM task2_2;
+
+CREATE OR REPLACE VIEW task2_3 AS
+SELECT br.name, company_name, link
+FROM models
+    JOIN brands br ON br.id = models.brand_id
+WHERE induction IN (true, false, null);
+
+SELECT * FROM task2_3;
+```
+![1-ая таблица](pic/t2_1.png)
+
+![2-ая таблица](pic/t2_2.png)
+
+![3-тья таблица](pic/t2_3.png)
+
+В задании 3 создать в запросе вычисляемое поле.
+
+```sql
+CREATE OR REPLACE VIEW task3 AS
+SELECT AVG(count) AS avarage_count
+FROM supplier
+WHERE id/2 = 0;
+
+SELECT * FROM task3;
+```
+
+![таблица](pic/t3.png)
+
+
+В 4 создание выборки всех данных с сортировкой по нескольким полям.
+
+```sql
+CREATE OR REPLACE VIEW task4_1 AS
+SELECT name, count, last_date
+FROM supplier
+ORDER BY count, last_date;
+
+SELECT * FROM task4_1;
+
+CREATE OR REPLACE VIEW task4_2 AS
+SELECT name, count, last_date
+FROM supplier
+ORDER BY last_date, count;
+
+SELECT * FROM task4_2;
+```
+
+![таблица](pic/t4_1.png)
+
+![таблица](pic/t4_2.png)
+
+В 5-ом создать запрос, вычисляющий несколько совокупных характеристик таблиц.
+
+```sql
+CREATE OR REPLACE VIEW task5 AS
+SELECT COUNT(*) AS num_of_models, AVG(volume) AS avg_volume,
+SUM(volume) AS sum_volume
+FROM models
+    JOIN products prod_id ON prod_id.model_id = models.id
+WHERE model_type_name = 'drip'
+group by model_type_name;
+
+SELECT * FROM task5;
+```
+
+![таблица](pic/t5.png)
+
+В 6-ом, Сделайте выборку данных из связанных таблиц (не менее двух примеров)
+
+```sql
+CREATE OR REPLACE VIEW task6_1 AS
+SELECT shops.name, location
+FROM shops
+    JOIN shop_to_sup ss_i ON ss_i.shop_sup_id = shops.id
+    JOIN supplier sup ON sup.id = ss_i.supplier_id;
+
+SELECT * FROM task6_1;
+
+CREATE OR REPLACE VIEW task6_2 AS
+SELECT shops.name AS shop_name, shops.location AS shop_loc, p.name, p.location
+FROM shops
+    JOIN shop_to_sup ss_i ON shops.id = ss_i.shop_sup_id
+    JOIN supplier sup ON sup.id = ss_i.supplier_id
+    JOIN producers p ON p.id = sup.producer_id;
+
+SELECT * FROM task6_2;
+```
+
+![таблица](pic/t6_1.png)
+
+![таблица](pic/t6_2.png)
+
+В 7-ом, создание запроса, рассчитывающий совокупную характеристику с использованием группировки, наложите ограничение на результат группировки.
+
+![таблица](pic/t7.png)
+
+В 8-ом задании придумать и реализовать пример использования вложенного запроса.
+```sql
+CREATE OR REPLACE VIEW task8 AS
+SELECT *
+FROM ( SELECT users.user_name, ord.count AS ord_count, ord.order_date
+FROM users
+    JOIN orders ord ON users.id = ord.id_user) as order_user
+WHERE order_user.order_date BETWEEN '2100-12-31 00:00:00' AND '2200-12-31 00:00:00';
+
+SELECT * FROM task8;
+```
+
+![таблица](pic/t8.png)
+
+В задании 9 с помощью оператора INSERT добавить в каждую таблицу по одной записи
+
+![пример результата записи в таблицу Brand](pic/task9/t9_1.png)
+
+```sql
+INSERT INTO brands (name, company_name, description, link) VALUES
+	('Delonghi','ОАО Delonghi','История De’Longhi началась в 1902 году, когда в провинциальном городке Тревизо открылась мастерская по изготовлению частей для печей и газовых плит.','https://delonghi.ru');
+```
+
+В задании 10 c помощью оператора UPDATE изменить значения нескольких полей у всех записей, отвечающих заданному условию
+
+```sql
+UPDATE products SET remainder = remainder + 10
+WHERE products.id IN (SELECT products.id FROM products
+    JOIN orders_prod ord_p_i ON products.id = ord_p_i.product_id
+    JOIN orders ord ON ord_p_i.ord_prod_id = ord.id
+WHERE ord.id / 2 = 0);
+```
+
+![до](pic/task11_1bef.png)
+
+![после](pic/task11_1after.png)
+
+В задании 11 с помощью оператора DELETE удалить запись, имеющую максимальное (минимальное) значение некоторой совокупной характеристики
 
 **Выводы**
 
